@@ -1,0 +1,34 @@
+name: Build TDLib
+
+on:
+  workflow_dispatch:  # 允许手动触发
+  push:               # 推送时自动触发
+    branches:
+      - master
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ zlib1g-dev libssl-dev libreadline-dev libconfig++-dev
+
+      - name: Build TDLib
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --build .
+
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tdlib-build
+          path: build/
