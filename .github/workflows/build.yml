@@ -2,7 +2,7 @@ name: Build TDLib
 
 on:
   workflow_dispatch:  # 允许手动触发
-  push:               # 推送时自动触发
+  push:               # 推送到 master 或 main 时自动触发
     branches:
       - master
       - main
@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake g++ zlib1g-dev libssl-dev libreadline-dev libconfig++-dev
+          sudo apt-get install -y cmake g++ zlib1g-dev libssl-dev libreadline-dev libconfig++-dev gperf
 
       - name: Build TDLib
         run: |
