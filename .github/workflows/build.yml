@@ -1,34 +1,41 @@
-name: Build TDLib
+name: Build TDLib (Windows)
 
 on:
-  workflow_dispatch:  # 允许手动触发
-  push:               # 推送到 master 或 main 时自动触发
+  workflow_dispatch:
+  push:
     branches:
       - master
       - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install dependencies (vcpkg)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake g++ zlib1g-dev libssl-dev libreadline-dev libconfig++-dev gperf
+          git clone https://github.com/microsoft/vcpkg.git
+          .\vcpkg\bootstrap-vcpkg.bat
+          .\vcpkg\vcpkg.exe install openssl:x64-windows zlib:x64-windows readline:x64-windows
 
-      - name: Build TDLib
+      - name: Install gperf (Chocolatey)
+        run: choco install gperf -y
+
+      - name: Add vcpkg to PATH
+        run: echo "$env:GITHUB_WORKSPACE\\vcpkg\\installed\\x64-windows\\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Build TDLib with CMake
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Release ..
-          cmake --build .
+          cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --build . --config Release
 
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: tdlib-build
+          name: tdlib-build-windows
           path: build/
