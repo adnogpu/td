@@ -19,19 +19,18 @@ jobs:
         run: |
           git clone https://github.com/microsoft/vcpkg.git
           .\vcpkg\bootstrap-vcpkg.bat
-          .\vcpkg\vcpkg.exe install openssl:x64-windows zlib:x64-windows readline:x64-windows
+          .\vcpkg\vcpkg.exe install zlib:x64-windows openssl:x64-windows readline:x64-windows
 
       - name: Install gperf (Chocolatey)
         run: choco install gperf -y
 
-      - name: Add vcpkg to PATH
-        run: echo "$env:GITHUB_WORKSPACE\\vcpkg\\installed\\x64-windows\\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-      - name: Build TDLib with CMake
+      - name: Configure and Build TDLib
         run: |
           mkdir build
           cd build
-          cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake -G "Visual Studio 17 2022" -A x64 ^
+            -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake ^
+            -DCMAKE_BUILD_TYPE=Release ..
           cmake --build . --config Release
 
       - name: Archive build artifacts
